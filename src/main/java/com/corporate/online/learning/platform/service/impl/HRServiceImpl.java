@@ -304,7 +304,7 @@ public class HRServiceImpl implements HRService {
                 .filter(course -> CheckIntervalUtils.checkNumberInInterval(
                         possibleEnrollmentsNoLow,
                         possibleEnrollmentsNoHigh,
-                        course.getCurrentEnrollments()))
+                        course.getMaxEnrollments()))
                 .filter(course -> CheckIntervalUtils.checkNumberInInterval(
                         assignmentsNoLow,
                         assignmentsNoHigh,
