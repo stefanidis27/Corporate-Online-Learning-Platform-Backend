@@ -28,7 +28,6 @@ public interface HRService {
             Integer currentNoCoursesLow, Integer currentNoCoursesHigh, List<String> paths,
             Integer currentNoPathsLow, Integer currentNoPathsHigh, Integer pageNo);
 
-    @SneakyThrows
     void createTrainersReport(Long hrId, CreateTrainersReportRequest request);
 
     List<CoursesReportResponse> showCoursesReport(
@@ -39,7 +38,6 @@ public interface HRService {
             Float completionRateLow, Float completionRateHigh, Float dropOutRateLow, Float dropOutRateHigh,
             String sortBy, String sortMode, Integer pageNo);
 
-    @SneakyThrows
     void createCoursesReport(Long hrId, CreateCoursesReportRequest request);
 
     void deleteCourse(Long courseId);
@@ -60,7 +58,6 @@ public interface HRService {
             String enrollmentDateEarliest, String enrollmentDateLatest, String path,
             Float progressPathLevelLow, Float progressPathLevelHigh, Integer pageNo);
 
-    @SneakyThrows
     void createTraineesReport(Long hrId, CreateTraineesReportRequest request);
 
     List<PathReportResponse> showPathsReport(
