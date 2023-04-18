@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class TraineesReportResponse {
 
     private String name;
+    private String email;
     private String department;
     private String position;
     private String seniority;

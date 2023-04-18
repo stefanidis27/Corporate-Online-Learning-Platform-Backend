@@ -55,10 +55,10 @@ public interface HRService {
     CourseEnrollmentDetailsResponse getCourseEnrollmentDetails(Long courseId);
 
     List<TraineesReportResponse> showTraineesReport(
-            String name, String department, String position, String seniority, String course,
-            Float progressLevelLow, Float progressLevelHigh, String enrollmentDateEarliest,
-            String enrollmentDateLatest, String path, Float progressPathLevelLow,
-            Float progressPathLevelHigh, Integer pageNo);
+            String name, String email, String department, String position, String seniority,
+            String course, Float progressLevelLow, Float progressLevelHigh,
+            String enrollmentDateEarliest, String enrollmentDateLatest, String path,
+            Float progressPathLevelLow, Float progressPathLevelHigh, Integer pageNo);
 
     @SneakyThrows
     void createTraineesReport(Long hrId, CreateTraineesReportRequest request);
