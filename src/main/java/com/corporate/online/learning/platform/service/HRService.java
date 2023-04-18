@@ -23,10 +23,10 @@ public interface HRService {
             String sortMode, Integer pageNo);
 
     List<TrainersReportResponse> showTrainersReport(
-            String name, String department, String position, String seniority, List<String> courses,
-            Long currentTraineesLow, Long currentTraineesHigh, Integer currentNoCoursesLow,
-            Integer currentNoCoursesHigh, List<String> paths, Integer currentNoPathsLow,
-            Integer currentNoPathsHigh, Integer pageNo);
+            String name, String email, String department, String position, String seniority,
+            List<String> courses, Long currentTraineesLow, Long currentTraineesHigh,
+            Integer currentNoCoursesLow, Integer currentNoCoursesHigh, List<String> paths,
+            Integer currentNoPathsLow, Integer currentNoPathsHigh, Integer pageNo);
 
     @SneakyThrows
     void createTrainersReport(Long hrId, CreateTrainersReportRequest request);

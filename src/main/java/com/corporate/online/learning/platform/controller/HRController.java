@@ -88,6 +88,7 @@ public class HRController {
     @GetMapping("/get-trainers-report/{pageNo}")
     public ResponseEntity<List<TrainersReportResponse>> showTrainersReport(
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String position,
             @RequestParam(required = false) String seniority,
@@ -100,9 +101,9 @@ public class HRController {
             @RequestParam(required = false) Integer currentNoPathsLow,
             @RequestParam(required = false) Integer currentNoPathsHigh,
             @PathVariable Integer pageNo) {
-        return ResponseEntity.ok(hrService.showTrainersReport(name, department, position, seniority, courses,
-                currentTraineesLow, currentTraineesHigh, currentNoCoursesLow, currentNoCoursesHigh, paths,
-                currentNoPathsLow, currentNoPathsHigh, pageNo));
+        return ResponseEntity.ok(hrService.showTrainersReport(name, email, department, position, seniority,
+                courses, currentTraineesLow, currentTraineesHigh, currentNoCoursesLow, currentNoCoursesHigh,
+                paths, currentNoPathsLow, currentNoPathsHigh, pageNo));
     }
 
     @PostMapping("/{hrId}/create-trainers-report")

@@ -180,16 +180,18 @@ public class HRServiceImpl implements HRService {
 
     @Override
     public List<TrainersReportResponse> showTrainersReport(
-            String name, String department, String position, String seniority, List<String> courses,
-            Long currentTraineesLow, Long currentTraineesHigh, Integer currentNoCoursesLow,
-            Integer currentNoCoursesHigh, List<String> paths, Integer currentNoPathsLow,
-            Integer currentNoPathsHigh, Integer pageNo) {
+            String name, String email, String department, String position, String seniority,
+            List<String> courses, Long currentTraineesLow, Long currentTraineesHigh,
+            Integer currentNoCoursesLow, Integer currentNoCoursesHigh, List<String> paths,
+            Integer currentNoPathsLow, Integer currentNoPathsHigh, Integer pageNo) {
 
         return accountDetailsRepository.findAll(PagingUtils.getPaging(pageNo,
                 applicationConfig.getFixedPageSize())).stream()
                 .filter(account -> account.getAccount().getRole().equals(Role.TRAINER))
                 .filter(account -> (ObjectUtils.isEmpty(name) || account.getName()
                         .toUpperCase(Locale.ROOT).contains(name.toUpperCase(Locale.ROOT))))
+                .filter(account -> (ObjectUtils.isEmpty(email) || account.getAccount().getEmail()
+                        .toUpperCase(Locale.ROOT).contains(email.toUpperCase(Locale.ROOT))))
                 .filter(account -> (ObjectUtils.isEmpty(department) || account.getDepartment()
                         .toUpperCase(Locale.ROOT).contains(department.toUpperCase(Locale.ROOT))))
                 .filter(account -> (ObjectUtils.isEmpty(seniority) || account.getSeniority()
@@ -214,6 +216,7 @@ public class HRServiceImpl implements HRService {
                         getNoCreatedPaths(account)))
                 .map(account -> TrainersReportResponse.builder()
                         .name(account.getName())
+                        .email(account.getAccount().getEmail())
                         .department(account.getDepartment())
                         .position(account.getPosition())
                         .seniority(account.getSeniority())
@@ -236,6 +239,7 @@ public class HRServiceImpl implements HRService {
         request.getReportList().forEach(response -> {
             List<String> line = new ArrayList<>();
             line.add(response.getName());
+            line.add(response.getEmail());
             line.add(ObjectUtils.isEmpty(response.getDepartment()) ? "-" : response.getDepartment());
             line.add(ObjectUtils.isEmpty(response.getPosition()) ? "-" : response.getPosition());
             line.add(ObjectUtils.isEmpty(response.getSeniority()) ? "-" : response.getSeniority());
