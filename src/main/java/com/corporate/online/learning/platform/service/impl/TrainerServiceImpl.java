@@ -312,7 +312,6 @@ public class TrainerServiceImpl implements TrainerService {
                 .name(path.getName())
                 .category(path.getCategory())
                 .currentEnrollments(path.getCurrentEnrollments())
-                .numberOfCourses(path.getNumberOfCourses())
                 .courses(courses)
                 .build();
     }

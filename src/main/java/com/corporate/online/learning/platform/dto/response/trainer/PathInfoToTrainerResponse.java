@@ -16,6 +16,5 @@ public class PathInfoToTrainerResponse {
     private String name;
     private String category;
     private Long currentEnrollments;
-    private Integer numberOfCourses;
     private List<CoursesToTrainerResponse> courses;
 }
