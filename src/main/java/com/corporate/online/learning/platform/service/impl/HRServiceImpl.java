@@ -21,6 +21,7 @@ import com.corporate.online.learning.platform.repository.account.AccountDetailsR
 import com.corporate.online.learning.platform.repository.course.CourseCompletionStatsRepository;
 import com.corporate.online.learning.platform.repository.course.CourseRepository;
 import com.corporate.online.learning.platform.repository.path.PathRepository;
+import com.corporate.online.learning.platform.service.EmailService;
 import com.corporate.online.learning.platform.service.HRService;
 import com.corporate.online.learning.platform.utils.CSVUtils;
 import com.corporate.online.learning.platform.utils.CheckIntervalUtils;
@@ -56,7 +57,14 @@ public class HRServiceImpl implements HRService {
     private final CourseRepository courseRepository;
     private final PathRepository pathRepository;
     private final ApplicationConfig applicationConfig;
-    private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
+
+    private enum ReportType {
+        TRAINEE,
+        TRAINER,
+        COURSE,
+        PATH
+    }
 
     @Override
     public void changeAccountDetails(Long accountId, ChangeAccountDetailsRequest request) {
@@ -103,6 +111,9 @@ public class HRServiceImpl implements HRService {
         } catch (DataAccessException e) {
             throw new CourseUniqueNameException("[Course Creation Error] Course could not be created.");
         }
+        emailService.sendEmailCourseCreationConfirmation(
+                trainerDetails.stream().map(accountDetails -> accountDetails.getAccount().getEmail()).toList(),
+                request.getName());
     }
 
     @Override
@@ -236,6 +247,8 @@ public class HRServiceImpl implements HRService {
                         + "with id " + hrId + " found."));
 
         List<List<String>> dataLines = new ArrayList<>();
+        dataLines.add(List.of("Name", "Email", "Department", "Position", "Seniority", "No. Taught Courses",
+                "No. Current Trainees", "No. Created Paths"));
         request.getReportList().forEach(response -> {
             List<String> line = new ArrayList<>();
             line.add(response.getName());
@@ -249,28 +262,8 @@ public class HRServiceImpl implements HRService {
             dataLines.add(line);
         });
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setSubject("[Report] Trainers Report");
-            helper.setFrom(applicationConfig.getEmailSenderAddress());
-            helper.setTo(hrAccountDetails.getAccount().getEmail());
-            helper.setText("Here is your generated <b>trainers</b> report.", true);
-            FileSystemResource file = new FileSystemResource(CSVUtils.createCSVFile(dataLines,
-                    applicationConfig.getTemporaryFileName()));
-            helper.addAttachment("TrainersReport.csv", file);
-        } catch (MessagingException e) {
-            throw new ReportAttachmentException("[Trainer Report Creation Error] Attachment build failed.");
-        }
-        javaMailSender.send(message);
-
-        try {
-            Files.deleteIfExists(Paths.get(applicationConfig.getTemporaryFileName()));
-        } catch (IOException e) {
-            throw new ReportRemoveTemporaryFileException("[Trainer Report Creation Error] Removal of the temporary " +
-                    "trainer report failed.");
-        }
+        emailService.sendEmailReport(hrAccountDetails.getAccount().getEmail(), dataLines,
+                ReportType.TRAINER.toString());
     }
 
     @Override
@@ -345,6 +338,8 @@ public class HRServiceImpl implements HRService {
                         + "with id " + hrId + " found."));
 
         List<List<String>> dataLines = new ArrayList<>();
+        dataLines.add(List.of("Name", "Category", "Self Enrollment", "No. Assignments", "No. Current Enrollments",
+                "No. Max Enrollments", "No. Completions", "No. Un-enrollments", "Completion Rate", "Drop-out Rate"));
         request.getReportList().forEach(response -> {
             List<String> line = new ArrayList<>();
             line.add(response.getName());
@@ -360,28 +355,7 @@ public class HRServiceImpl implements HRService {
             dataLines.add(line);
         });
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setSubject("[Report] Courses Report");
-            helper.setFrom(applicationConfig.getEmailSenderAddress());
-            helper.setTo(hrAccountDetails.getAccount().getEmail());
-            helper.setText("Here is your generated <b>courses</b> report.", true);
-            FileSystemResource file = new FileSystemResource(CSVUtils.createCSVFile(dataLines,
-                    applicationConfig.getTemporaryFileName()));
-            helper.addAttachment("CoursesReport.csv", file);
-        } catch (MessagingException e) {
-            throw new ReportAttachmentException("[Course Report Creation Error] Attachment build failed.");
-        }
-        javaMailSender.send(message);
-
-        try {
-            Files.deleteIfExists(Paths.get(applicationConfig.getTemporaryFileName()));
-        } catch (IOException e) {
-            throw new ReportRemoveTemporaryFileException("[Course Report Creation Error] Removal of the temporary " +
-                    "course report failed.");
-        }
+        emailService.sendEmailReport(hrAccountDetails.getAccount().getEmail(), dataLines, ReportType.COURSE.toString());
     }
 
     @Override
@@ -539,6 +513,8 @@ public class HRServiceImpl implements HRService {
                         + "with id " + hrId + " found."));
 
         List<List<String>> dataLines = new ArrayList<>();
+        dataLines.add(List.of("Name", "Email", "Department", "Position", "Seniority", "Course Progress Level",
+                "Course Enrollment Date", "Path Progress Level"));
         request.getReportList().forEach(response -> {
             List<String> line = new ArrayList<>();
             line.add(response.getName());
@@ -546,34 +522,17 @@ public class HRServiceImpl implements HRService {
             line.add(ObjectUtils.isEmpty(response.getDepartment()) ? "-" : response.getDepartment());
             line.add(ObjectUtils.isEmpty(response.getPosition()) ? "-" : response.getPosition());
             line.add(ObjectUtils.isEmpty(response.getSeniority()) ? "-" : response.getSeniority());
-            line.add(response.getProgressLevel().toString());
-            line.add(response.getEnrollmentDate());
-            line.add(response.getPathProgressLevel().toString());
+            line.add(ObjectUtils.isEmpty(response.getProgressLevel())
+                    ? "-" : response.getProgressLevel().toString());
+            line.add(ObjectUtils.isEmpty(response.getEnrollmentDate())
+                    ? "-" : response.getEnrollmentDate());
+            line.add(ObjectUtils.isEmpty(response.getPathProgressLevel())
+                    ? "-" : response.getPathProgressLevel().toString());
             dataLines.add(line);
         });
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setSubject("[Report] Trainees Report");
-            helper.setFrom(applicationConfig.getEmailSenderAddress());
-            helper.setTo(hrAccountDetails.getAccount().getEmail());
-            helper.setText("Here is your generated <b>trainees</b> report.", true);
-            FileSystemResource file = new FileSystemResource(CSVUtils.createCSVFile(dataLines,
-                    applicationConfig.getTemporaryFileName()));
-            helper.addAttachment("TraineesReport.csv", file);
-        } catch (MessagingException e) {
-            throw new ReportAttachmentException("[Trainee Report Creation Error] Attachment build failed.");
-        }
-        javaMailSender.send(message);
-
-        try {
-            Files.deleteIfExists(Paths.get(applicationConfig.getTemporaryFileName()));
-        } catch (IOException e) {
-            throw new ReportRemoveTemporaryFileException("[Trainee Report Creation Error] Removal of the temporary " +
-                    "trainee report failed.");
-        }
+        emailService.sendEmailReport(hrAccountDetails.getAccount().getEmail(), dataLines,
+                ReportType.TRAINEE.toString());
     }
 
     @Override
@@ -624,6 +583,8 @@ public class HRServiceImpl implements HRService {
                         + "with id " + hrId + " found."));
 
         List<List<String>> dataLines = new ArrayList<>();
+        dataLines.add(List.of("Name", "Category", "No. Courses", "No. Current Enrollments",
+                "No. Completions", "Trainer"));
         request.getReportList().forEach(response -> {
             List<String> line = new ArrayList<>();
             line.add(response.getName());
@@ -635,28 +596,7 @@ public class HRServiceImpl implements HRService {
             dataLines.add(line);
         });
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setSubject("[Report] Paths Report");
-            helper.setFrom(applicationConfig.getEmailSenderAddress());
-            helper.setTo(hrAccountDetails.getAccount().getEmail());
-            helper.setText("Here is your generated <b>paths</b> report.", true);
-            FileSystemResource file = new FileSystemResource(CSVUtils.createCSVFile(dataLines,
-                    applicationConfig.getTemporaryFileName()));
-            helper.addAttachment("PathsReport.csv", file);
-        } catch (MessagingException e) {
-            throw new ReportAttachmentException("[Path Report Creation Error] Attachment build failed.");
-        }
-        javaMailSender.send(message);
-
-        try {
-            Files.deleteIfExists(Paths.get(applicationConfig.getTemporaryFileName()));
-        } catch (IOException e) {
-            throw new ReportRemoveTemporaryFileException("[Path Report Creation Error] Removal of the temporary " +
-                    "path report failed.");
-        }
+        emailService.sendEmailReport(hrAccountDetails.getAccount().getEmail(), dataLines, ReportType.PATH.toString());
     }
 
     private Float getCourseDropOutRate(Course course) {

@@ -1,6 +1,6 @@
 package com.corporate.online.learning.platform.config.security;
 
-import com.corporate.online.learning.platform.service.impl.AuthenticationServiceImpl;
+import com.corporate.online.learning.platform.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
 
-    private final AuthenticationServiceImpl authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {

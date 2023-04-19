@@ -14,7 +14,9 @@ public interface AuthenticationService {
 
     AuthenticationResponse authenticate(AuthenticationRequest request);
 
-    void sendEmailToChangeForgottenPassword(ForgotPasswordRequest request);
+    void resetForgottenPassword(ForgotPasswordRequest request);
 
     ChangeCredentialsResponse changeCredentials(Long id, ChangeCredentialsRequest request);
+
+    void handleFailedLoginAttempt(String email);
 }

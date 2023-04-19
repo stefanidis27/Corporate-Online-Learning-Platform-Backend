@@ -3,12 +3,8 @@ package com.corporate.online.learning.platform.controller;
 import com.corporate.online.learning.platform.dto.request.auth.AuthenticationRequest;
 import com.corporate.online.learning.platform.dto.request.auth.ForgotPasswordRequest;
 import com.corporate.online.learning.platform.dto.response.auth.AuthenticationResponse;
-import com.corporate.online.learning.platform.dto.response.auth.FailedLoginStatusResponse;
 import com.corporate.online.learning.platform.exception.ErrorMessage;
-import com.corporate.online.learning.platform.exception.account.AccountDeletionException;
-import com.corporate.online.learning.platform.exception.account.AccountDetailsNotFoundException;
 import com.corporate.online.learning.platform.exception.account.AccountLockedException;
-import com.corporate.online.learning.platform.exception.account.TokenException;
 import com.corporate.online.learning.platform.service.impl.AuthenticationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,9 +23,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
-    @PostMapping("/recover-password")
-    public ResponseEntity<Void> recoverPassword(@RequestBody ForgotPasswordRequest request) {
-        authService.sendEmailToChangeForgottenPassword(request);
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.resetForgottenPassword(request);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

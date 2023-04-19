@@ -8,8 +8,8 @@ import com.corporate.online.learning.platform.repository.account.AccountReposito
 import com.corporate.online.learning.platform.repository.course.CourseRepository;
 import com.corporate.online.learning.platform.repository.path.PathRepository;
 import com.corporate.online.learning.platform.service.AdminService;
+import com.corporate.online.learning.platform.service.EmailService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +19,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final AccountRepository accountRepository;
     private final CourseRepository courseRepository;
+    private final EmailService emailService;
     private final PathRepository pathRepository;
 
     @Override
@@ -26,6 +27,7 @@ public class AdminServiceImpl implements AdminService {
         var account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("[Account Deletion Error] No account with id "
                         + accountId + " was found."));
+        String email = account.getEmail();
         account.getAccountDetails().getTaughtCourses().forEach(course ->
                 course.getTrainersDetails().remove(account.getAccountDetails()));
         account.getAccountDetails().getCreatedPaths().forEach(path ->
@@ -58,6 +60,6 @@ public class AdminServiceImpl implements AdminService {
             throw new AccountDeletionException("[Account Deletion Error] Account with id "
                     + accountId + " could not be deleted.");
         }
-
+        emailService.sendEmailAccountDeletionConfirmation(email);
     }
 }

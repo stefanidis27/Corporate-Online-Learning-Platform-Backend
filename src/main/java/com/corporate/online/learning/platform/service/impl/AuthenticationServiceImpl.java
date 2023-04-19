@@ -16,12 +16,11 @@ import com.corporate.online.learning.platform.repository.account.AccountDetailsR
 import com.corporate.online.learning.platform.repository.account.AccountRepository;
 import com.corporate.online.learning.platform.repository.account.TokenRepository;
 import com.corporate.online.learning.platform.service.AuthenticationService;
+import com.corporate.online.learning.platform.service.EmailService;
 import com.corporate.online.learning.platform.service.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,9 +43,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final ApplicationConfig applicationConfig;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final JavaMailSender javaMailSender;
 
     @Override
     public void createAccount(CreateAccountRequest request) {
@@ -61,10 +60,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .taughtCourses(new ArrayList<>())
                 .createdPaths(new ArrayList<>())
                 .build();
+
+        String password = generateRandomPassword();
         var account = Account.builder()
                 .accountDetails(accountDetails)
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(password))
                 .role(Role.valueOf(request.getRole()))
                 .locked(Boolean.FALSE)
                 .failedLoginAttempts(0)
@@ -85,6 +86,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String jwtToken = jwtService.generateToken(account);
         saveAccountToken(savedAccount, jwtToken);
+        emailService.sendEmailAccountCreationConfirmation(request.getEmail(), password);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void sendEmailToChangeForgottenPassword(ForgotPasswordRequest request) {
+    public void resetForgottenPassword(ForgotPasswordRequest request) {
         Account account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AccountNotFoundException("[Password Change Error] No account with email "
                         + request.getEmail() + " found."));
@@ -128,13 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     + " could not be updated with the new password.");
         }
 
-        var mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom(applicationConfig.getEmailSenderAddress());
-        mailMessage.setTo(request.getEmail());
-        mailMessage.setText("Your new password is: " + newPassword + ". Please log in and change it.");
-        mailMessage.setSubject("[Forgotten Password] Password Change Request");
-
-        javaMailSender.send(mailMessage);
+        emailService.sendEmailResetPasswordConfirmation(request.getEmail(), newPassword);
     }
 
     @Override
@@ -142,6 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("[Credentials Change Error] No account with id " + id
                         + " found."));
+        String oldEmail = account.getEmail();
         account.setEmail(ObjectUtils.isEmpty(request.getEmail()) ? account.getEmail() : request.getEmail());
         if (!ObjectUtils.isEmpty(request.getPassword())) {
             account.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -156,10 +153,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var jwtToken= jwtService.generateToken(account);
         revokeAllAccountTokens(account);
         saveAccountToken(account, jwtToken);
+        emailService.sendEmailCredentialsChangeConfirmation(
+                oldEmail,
+                request.getEmail(),
+                request.getPassword());
 
         return ChangeCredentialsResponse.builder().token(jwtToken).build();
     }
 
+    @Override
     @Transactional
     public void handleFailedLoginAttempt(String email) {
         Account account = accountRepository.findByEmail(email)
@@ -178,20 +180,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new AccountException("[Handle Failed Login Error] No account with id "
                         + account.getId() + " could be updated.");
             }
+            emailService.sendEmailAccountLockedConfirmation(email);
         }
     }
 
-    private String generateRandomPassword() {
-        int leftLimit = '0';
-        int rightLimit = 'z';
-        int targetStringLength = applicationConfig.getNewRandomPasswordLimit();
-        Random random = new Random();
+    @Transactional
+    private boolean checkAccountStillLocked(Account account) {
+        if (!ObjectUtils.isEmpty(account.getLockTimestamp())) {
+            Date date = new Date(System.currentTimeMillis());
+            Timestamp timestampInstant = new Timestamp(date.getTime());
+            long millisElapsed = timestampInstant.getTime() - account.getLockTimestamp().getTime();
 
-        return random.ints(leftLimit, rightLimit + 1)
-                .filter(i -> (i <= '9' || i >= 'A') && (i <= 'Z' || i >= 'a'))
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
+            if (account.getLocked().equals(Boolean.TRUE) && millisElapsed
+                    > Duration.ofMinutes(applicationConfig.getAccountLockTime()).toMillis()) {
+                account.setLocked(Boolean.FALSE);
+                account.setFailedLoginAttempts(0);
+                try {
+                    accountRepository.save(account);
+                } catch (DataAccessException e) {
+                    throw new AccountException("[Authentication Error] Account with id " + account.getId()
+                            + " could not be updated with the new failed login attempts.");
+                }
+
+                return false;
+            } else return account.getLocked().equals(Boolean.TRUE);
+        }
+
+        return false;
     }
 
     private void revokeAllAccountTokens(Account account) {
@@ -223,28 +238,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    @Transactional
-    private boolean checkAccountStillLocked(Account account) {
-        if (!ObjectUtils.isEmpty(account.getLockTimestamp())) {
-            Date date = new Date(System.currentTimeMillis());
-            Timestamp timestampInstant = new Timestamp(date.getTime());
-            long millisElapsed = timestampInstant.getTime() - account.getLockTimestamp().getTime();
+    private String generateRandomPassword() {
+        int leftLimit = '0';
+        int rightLimit = 'z';
+        int targetStringLength = applicationConfig.getNewRandomPasswordLimit();
+        Random random = new Random();
 
-            if (account.getLocked().equals(Boolean.TRUE) && millisElapsed
-                    > Duration.ofMinutes(applicationConfig.getAccountLockTime()).toMillis()) {
-                account.setLocked(Boolean.FALSE);
-                account.setFailedLoginAttempts(0);
-                try {
-                    accountRepository.save(account);
-                } catch (DataAccessException e) {
-                    throw new AccountException("[Authentication Error] Account with id " + account.getId()
-                            + " could not be updated with the new failed login attempts.");
-                }
-
-                return false;
-            } else return account.getLocked().equals(Boolean.TRUE);
-        }
-
-        return false;
+        return random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= '9' || i >= 'A') && (i <= 'Z' || i >= 'a'))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }

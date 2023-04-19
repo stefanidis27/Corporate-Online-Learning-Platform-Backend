@@ -55,6 +55,51 @@ public class ApplicationConfig {
     @Value("${security.key}")
     private String securityKey;
 
+    @Value("${mail.subject.reset.password}")
+    private String emailSubjectResetPassword;
+
+    @Value("${mail.body.reset.password}")
+    private String emailBodyResetPassword;
+
+    @Value("${mail.subject.create.account}")
+    private String emailSubjectAccountCreation;
+
+    @Value("${mail.body.create.account}")
+    private String emailBodyAccountCreation;
+
+    @Value("${mail.subject.change.credentials}")
+    private String emailSubjectCredentialsChange;
+
+    @Value("${mail.body.change.credentials}")
+    private String emailBodyCredentialsChange;
+
+    @Value("${mail.body.change.credentials.password}")
+    private String emailBodyCredentialsChangePasswordMessage;
+
+    @Value("${mail.body.change.credentials.old.email}")
+    private String emailBodyCredentialsChangeOldEmailMessage;
+
+    @Value("${mail.body.change.credentials.new.email}")
+    private String emailBodyCredentialsChangeNewEmailMessage;
+
+    @Value("${mail.subject.lock.account}")
+    private String emailSubjectAccountLocked;
+
+    @Value("${mail.body.lock.account}")
+    private String emailBodyAccountLocked;
+
+    @Value("${mail.subject.delete.account}")
+    private String emailSubjectAccountDeleted;
+
+    @Value("${mail.body.delete.account}")
+    private String emailBodyAccountDeleted;
+
+    @Value("${mail.subject.create.course}")
+    private String emailSubjectCourseCreated;
+
+    @Value("${mail.body.create.course}")
+    private String emailBodyCourseCreated;
+
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> accountRepository.findByEmail(username)

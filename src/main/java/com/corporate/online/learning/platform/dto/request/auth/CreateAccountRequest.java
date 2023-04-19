@@ -16,6 +16,5 @@ public class CreateAccountRequest {
     private String position;
     private String seniority;
     private String email;
-    private String password;
     private String role;
 }
