@@ -30,7 +30,7 @@ public class Assignment {
     private Long id;
     @Column(name = "needs_grading", nullable = false)
     private Boolean needsGrading;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition="TEXT")
     private String text;
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)

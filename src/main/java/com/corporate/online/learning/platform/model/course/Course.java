@@ -30,6 +30,7 @@ public class Course {
     private Long maxEnrollments;
     @Column(name = "self_enrollment", nullable = false)
     private Boolean selfEnrollment;
+    @Column(columnDefinition="TEXT")
     private String description;
     @Column(name = "no_assignments", nullable = false)
     private Integer numberOfAssignments;
