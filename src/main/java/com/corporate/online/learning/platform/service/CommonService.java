@@ -16,9 +16,9 @@ public interface CommonService {
             String name, String department, String position, String seniority,
             String email, Long id, Integer pageNo);
 
-    void completeAssignment(Long assignmentStatsId);
+    void completeAssignment(Long assignmentStatsId, Boolean sendConfirmationEmail);
 
-    void enrollInCourse(Long courseId, Long traineeId);
+    void enrollInCourse(Long courseId, Long traineeId, Boolean sendConfirmationEmail);
 
-    void unEnrollFromCourse(Long courseId, Long traineeId);
+    void unEnrollFromCourse(Long courseId, Long traineeId, Boolean sendConfirmationEmail);
 }

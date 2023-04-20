@@ -85,6 +85,7 @@ public class HRServiceImpl implements HRService {
             throw new AccountDetailsException("[User Info Editing Error] Account details with id " + accountId
                     + " could not be updated.");
         }
+        emailService.sendEmailAccountDetailsChangeConfirmation(account.getAccount().getEmail());
     }
 
     @Override

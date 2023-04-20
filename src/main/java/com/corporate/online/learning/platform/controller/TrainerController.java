@@ -90,7 +90,7 @@ public class TrainerController {
 
     @PostMapping("/approve-assignment/{assignmentStatsId}")
     public ResponseEntity<Void> approveAssignment(@PathVariable Long assignmentStatsId) {
-        commonService.completeAssignment(assignmentStatsId);
+        commonService.completeAssignment(assignmentStatsId, Boolean.TRUE);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

@@ -25,7 +25,7 @@ public class TraineeController {
     public ResponseEntity<Void> enrollInCourse(
             @PathVariable Long courseId,
             @PathVariable Long traineeId) {
-        commonService.enrollInCourse(courseId, traineeId);
+        commonService.enrollInCourse(courseId, traineeId, Boolean.FALSE);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -33,7 +33,7 @@ public class TraineeController {
     public ResponseEntity<Void> unEnrollFromCourse(
             @PathVariable Long courseId,
             @PathVariable Long traineeId) {
-        commonService.unEnrollFromCourse(courseId, traineeId);
+        commonService.unEnrollFromCourse(courseId, traineeId, Boolean.FALSE);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -88,7 +88,7 @@ public class TraineeController {
 
     @PostMapping("/complete-assignment/{assignmentStatsId}")
     public ResponseEntity<Void> completeAssignment(@PathVariable Long assignmentStatsId) {
-        commonService.completeAssignment(assignmentStatsId);
+        commonService.completeAssignment(assignmentStatsId, Boolean.FALSE);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

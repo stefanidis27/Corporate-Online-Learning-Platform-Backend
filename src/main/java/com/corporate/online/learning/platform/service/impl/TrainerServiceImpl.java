@@ -24,6 +24,7 @@ import com.corporate.online.learning.platform.repository.assignment.AssignmentRe
 import com.corporate.online.learning.platform.repository.course.CourseCompletionStatsRepository;
 import com.corporate.online.learning.platform.repository.course.CourseRepository;
 import com.corporate.online.learning.platform.repository.path.PathRepository;
+import com.corporate.online.learning.platform.service.EmailService;
 import com.corporate.online.learning.platform.service.TrainerService;
 import com.corporate.online.learning.platform.utils.PagingUtils;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final CourseRepository courseRepository;
     private final PathRepository pathRepository;
+    private final EmailService emailService;
     private final ApplicationConfig applicationConfig;
     private final AssignmentRepository assignmentRepository;
     private final AccountDetailsRepository accountDetailsRepository;
@@ -198,6 +200,8 @@ public class TrainerServiceImpl implements TrainerService {
             throw new AssignmentCompletionStatsException("[Trainer Reject Assignment Error] Assignment completion "
                     + "stats with id " + assignmentStatsId + " could not be updated.");
         }
+
+        emailService.sendEmailRejectedAssignment(assignmentStats);
     }
 
     @Override

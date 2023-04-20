@@ -22,6 +22,7 @@ import com.corporate.online.learning.platform.repository.course.CourseRepository
 import com.corporate.online.learning.platform.repository.path.PathCompletionStatsRepository;
 import com.corporate.online.learning.platform.repository.path.PathRepository;
 import com.corporate.online.learning.platform.service.CommonService;
+import com.corporate.online.learning.platform.service.EmailService;
 import com.corporate.online.learning.platform.utils.PagingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -41,6 +42,7 @@ public class CommonServiceImpl implements CommonService {
     private final AccountDetailsRepository accountDetailsRepository;
     private final CourseRepository courseRepository;
     private final PathRepository pathRepository;
+    private final EmailService emailService;
     private final PathCompletionStatsRepository pathStatsRepository;
     private final AssignmentCompletionStatsRepository assignmentStatsRepository;
     private final CourseCompletionStatsRepository courseStatsRepository;
@@ -95,7 +97,7 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public void completeAssignment(Long assignmentStatsId) {
+    public void completeAssignment(Long assignmentStatsId, Boolean sendConfirmationEmail) {
         var assignmentStats = assignmentStatsRepository.findById(assignmentStatsId)
                 .orElseThrow(() -> new AssignmentCompletionStatsNotFoundException("[Assignment Completion Error] No " +
                         "assignment completion stats with id " + assignmentStatsId + " found."));
@@ -119,6 +121,9 @@ public class CommonServiceImpl implements CommonService {
             } catch (DataAccessException e) {
                 throw new CourseException("[Assignment Completion Error] Course with id " + course.getId()
                         + " could not be updated with the new completion stats.");
+            }
+            if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+                emailService.sendEmailCourseCompletedConfirmation(courseStats);
             }
 
             course.getPaths().forEach(path -> path.getPathCompletionStats().forEach(stats -> {
@@ -155,10 +160,13 @@ public class CommonServiceImpl implements CommonService {
             throw new CourseCompletionStatsException("[Assignment Completion Error] Course completion stats with" +
                     " id " + courseStats.getId() + " could not be updated.");
         }
+        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+            emailService.sendEmailApprovedAssignmentConfirmation(assignmentStats);
+        }
     }
 
     @Override
-    public void enrollInCourse(Long courseId, Long traineeId) {
+    public void enrollInCourse(Long courseId, Long traineeId, Boolean sendConfirmationEmail) {
         var account = accountDetailsRepository.findById(traineeId)
                 .orElseThrow(() -> new AccountDetailsNotFoundException("[Enrollment Error] No account with id "
                         + traineeId + " found."));
@@ -212,10 +220,14 @@ public class CommonServiceImpl implements CommonService {
             throw new CourseException("[Enrollment Error] Course with id "
                     + course.getId() + " could not be updated with the new completion stats.");
         }
+
+        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+            emailService.sendEmailCourseEnrollmentConfirmation(course.getName(), account.getAccount().getEmail());
+        }
     }
 
     @Override
-    public void unEnrollFromCourse(Long courseId, Long traineeId) {
+    public void unEnrollFromCourse(Long courseId, Long traineeId, Boolean sendConfirmationEmail) {
         var account = accountDetailsRepository.findById(traineeId)
                 .orElseThrow(() -> new AccountDetailsNotFoundException("[Un-enrollment Error] No account with id "
                         + traineeId + " found."));
@@ -249,8 +261,8 @@ public class CommonServiceImpl implements CommonService {
         try {
             assignmentStatsRepository.deleteAll(assignmentStats);
         } catch (DataAccessException e) {
-            throw new AssignmentCompletionStatsDeletionException("[Un-enrollment Error] Assignment completion stats " +
-                    "could not be deleted.");
+            throw new AssignmentCompletionStatsDeletionException("[Un-enrollment Error] Assignment completion stats "
+                    + "could not be deleted.");
         }
         try {
             courseRepository.save(course);
@@ -263,6 +275,9 @@ public class CommonServiceImpl implements CommonService {
         } catch (DataAccessException e) {
             throw new AccountDetailsException("[Un-enrollment Error] Account details with id "
                     + account.getId() + " could not be updated with the new completion stats.");
+        }
+        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+            emailService.sendEmailCourseUnEnrollmentConfirmation(course.getName(), account.getAccount().getEmail());
         }
     }
 }

@@ -100,6 +100,42 @@ public class ApplicationConfig {
     @Value("${mail.body.create.course}")
     private String emailBodyCourseCreated;
 
+    @Value("${mail.subject.enroll.course}")
+    private String emailSubjectEnrolledInCourse;
+
+    @Value("${mail.body.enroll.course}")
+    private String emailBodyEnrolledInCourse;
+
+    @Value("${mail.subject.un.enroll.course}")
+    private String emailSubjectUnEnrolledFromCourse;
+
+    @Value("${mail.body.un.enroll.course}")
+    private String emailBodyUnEnrolledFromCourse;
+
+    @Value("${mail.subject.approve.assignment}")
+    private String emailSubjectAssignmentApproved;
+
+    @Value("${mail.body.approve.assignment}")
+    private String emailBodyAssignmentApproved;
+
+    @Value("${mail.subject.reject.assignment}")
+    private String emailSubjectAssignmentRejected;
+
+    @Value("${mail.body.reject.assignment}")
+    private String emailBodyAssignmentRejected;
+
+    @Value("${mail.subject.complete.course}")
+    private String emailSubjectCourseCompleted;
+
+    @Value("${mail.body.complete.course}")
+    private String emailBodyCourseCompleted;
+
+    @Value("${mail.subject.info.change}")
+    private String emailSubjectInfoChanged;
+
+    @Value("${mail.body.info.change}")
+    private String emailBodyInfoChanged;
+
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> accountRepository.findByEmail(username)

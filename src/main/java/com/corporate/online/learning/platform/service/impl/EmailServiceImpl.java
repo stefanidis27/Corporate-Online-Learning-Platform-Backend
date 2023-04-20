@@ -3,6 +3,8 @@ package com.corporate.online.learning.platform.service.impl;
 import com.corporate.online.learning.platform.config.ApplicationConfig;
 import com.corporate.online.learning.platform.exception.report.ReportAttachmentException;
 import com.corporate.online.learning.platform.exception.report.ReportRemoveTemporaryFileException;
+import com.corporate.online.learning.platform.model.assignment.AssignmentCompletionStats;
+import com.corporate.online.learning.platform.model.course.CourseCompletionStats;
 import com.corporate.online.learning.platform.service.EmailService;
 import com.corporate.online.learning.platform.utils.CSVUtils;
 import jakarta.mail.MessagingException;
@@ -130,6 +132,77 @@ public class EmailServiceImpl implements EmailService {
             throw new ReportRemoveTemporaryFileException("[" + reportTypeLabel
                     + " Report Creation Error] Removal of the temporary report failed.");
         }
+    }
+
+    @Override
+    public void sendEmailAccountDetailsChangeConfirmation(String email) {
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyInfoChanged(),
+                applicationConfig.getEmailSubjectInfoChanged(),
+                email);
+    }
+
+    @Override
+    public void sendEmailRejectedAssignment(AssignmentCompletionStats assignmentStats) {
+        String fullComment = assignmentStats.getComment();
+        String trainerComment = fullComment.substring(fullComment.indexOf(":") + 2);
+        String trainerName = fullComment.substring(0, fullComment.indexOf(":"));
+        String courseName = assignmentStats.getAssignment().getCourse().getName();
+        String assignmentText = assignmentStats.getAssignment().getText();
+        String email = assignmentStats.getAccountDetails().getAccount().getEmail();
+
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyAssignmentRejected()
+                        .replace("{placeholder_course}", courseName)
+                        .replace("{placeholder_trainer}", trainerName)
+                        .replace("{placeholder_comment}", trainerComment)
+                        .replace("{placeholder_text}", assignmentText),
+                applicationConfig.getEmailSubjectAssignmentRejected(),
+                email);
+    }
+
+    @Override
+    public void sendEmailCourseCompletedConfirmation(CourseCompletionStats courseStats) {
+        String courseName = courseStats.getCourse().getName();
+        String category = courseStats.getCourse().getCategory();
+        String email = courseStats.getAccountDetails().getAccount().getEmail();
+
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyCourseCompleted()
+                        .replace("{placeholder_course}", courseName)
+                        .replace("{placeholder_category}", category),
+                applicationConfig.getEmailSubjectCourseCompleted(),
+                email);
+    }
+
+    @Override
+    public void sendEmailApprovedAssignmentConfirmation(AssignmentCompletionStats assignmentStats) {
+        String courseName = assignmentStats.getAssignment().getCourse().getName();
+        String assignmentText = assignmentStats.getAssignment().getText();
+        String email = assignmentStats.getAccountDetails().getAccount().getEmail();
+
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyAssignmentApproved()
+                        .replace("{placeholder_course}", courseName)
+                        .replace("{placeholder_text}", assignmentText),
+                applicationConfig.getEmailSubjectAssignmentApproved(),
+                email);
+    }
+
+    @Override
+    public void sendEmailCourseEnrollmentConfirmation(String courseName, String email) {
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyEnrolledInCourse().replace("{placeholder}", courseName),
+                applicationConfig.getEmailSubjectEnrolledInCourse(),
+                email);
+    }
+
+    @Override
+    public void sendEmailCourseUnEnrollmentConfirmation(String courseName, String email) {
+        sendEmailWithNoAttachment(
+                applicationConfig.getEmailBodyUnEnrolledFromCourse().replace("{placeholder}", courseName),
+                applicationConfig.getEmailSubjectUnEnrolledFromCourse(),
+                email);
     }
 
     private void sendEmailWithNoAttachment(String emailBody, String emailSubject, String... email) {

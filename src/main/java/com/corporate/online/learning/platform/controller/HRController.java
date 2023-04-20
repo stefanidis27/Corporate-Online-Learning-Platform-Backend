@@ -194,7 +194,7 @@ public class HRController {
     public ResponseEntity<Void> enrollInCourse(
             @PathVariable Long courseId,
             @PathVariable Long traineeId) {
-        commonService.enrollInCourse(courseId, traineeId);
+        commonService.enrollInCourse(courseId, traineeId, Boolean.TRUE);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -202,7 +202,7 @@ public class HRController {
     public ResponseEntity<Void> unEnrollFromCourse(
             @PathVariable Long courseId,
             @PathVariable Long traineeId) {
-        commonService.unEnrollFromCourse(courseId, traineeId);
+        commonService.unEnrollFromCourse(courseId, traineeId, Boolean.TRUE);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
