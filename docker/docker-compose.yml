@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  frontend:
+    image: 'fe-corporate-online-learning-platform-img:latest'
+    build:
+      context: /fe-online-learning-platform
+    container_name: corporate-online-learning-platform-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8100:8100"
+  backend:
+    image: 'be-corporate-online-learning-platform-img:latest'
+    build:
+      context: /be.online.learning.platform/docker
+    container_name: corporate-online-learning-platform-backend
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "8080:8080"
+  db:
+    image: 'postgres:alpine'
+    container_name: corporate-online-learning-platform-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+#    docker exec -it corporate-online-learning-platform-db psql -U postgres
