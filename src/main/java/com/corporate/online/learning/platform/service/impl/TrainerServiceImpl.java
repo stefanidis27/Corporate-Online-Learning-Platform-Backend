@@ -64,7 +64,7 @@ public class TrainerServiceImpl implements TrainerService {
                 .filter(course -> (ObjectUtils.isEmpty(category) || course.getCategory()
                         .toUpperCase(Locale.ROOT).contains(category.toUpperCase(Locale.ROOT))))
                 .filter(course -> course.getTrainersDetails().contains(trainerDetails))
-                .filter(course -> course.getNumberOfAssignments() == 0 || course.getCurrentEnrollments() != 0)
+                .filter(course -> course.getNumberOfAssignments() == 0 || needsGrading(course))
                 .map(course -> CoursesToTrainerResponse.builder()
                         .id(course.getId())
                         .name(course.getName())
@@ -318,5 +318,21 @@ public class TrainerServiceImpl implements TrainerService {
                 .currentEnrollments(path.getCurrentEnrollments())
                 .courses(courses)
                 .build();
+    }
+
+    private boolean needsGrading(Course course) {
+        List<Assignment> assignmentsThatNeedGrading = course.getAssignments().stream()
+                .filter(assignment -> assignment.getNeedsGrading().equals(Boolean.TRUE)).collect(Collectors.toList());
+        if (!ObjectUtils.isEmpty(assignmentsThatNeedGrading)) {
+            for (Assignment assignment : assignmentsThatNeedGrading) {
+                boolean assignmentNotAlreadyGraded = assignment.getAssignmentCompletionStats().stream()
+                        .anyMatch(stats -> stats.getCompletionStatus().equals(Boolean.FALSE));
+                if (assignmentNotAlreadyGraded) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
