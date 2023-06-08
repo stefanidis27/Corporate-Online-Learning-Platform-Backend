@@ -609,11 +609,12 @@ public class HRServiceImpl implements HRService {
 
     private Float getCourseCompletionRate(Course course) {
         final long totalRelevantEnrollments = course.getCompletions() + course.getUnEnrollments();
-
         if (totalRelevantEnrollments == 0) {
             return 0F;
         }
-        return (float) (100 * (course.getCompletions() / totalRelevantEnrollments));
+        final float completionRate = 100 * ((float) course.getCompletions() / totalRelevantEnrollments);
+
+        return (Float) (float) (Math.round(completionRate * Math.pow(10, 2)) / Math.pow(10, 2));
     }
 
     private int getNoTaughtCourses(AccountDetails account) {
