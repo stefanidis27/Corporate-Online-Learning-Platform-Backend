@@ -614,7 +614,7 @@ public class HRServiceImpl implements HRService {
         }
         final float completionRate = 100 * ((float) course.getCompletions() / totalRelevantEnrollments);
 
-        return (Float) (float) (Math.round(completionRate * Math.pow(10, 2)) / Math.pow(10, 2));
+        return (float) (Math.round(completionRate * Math.pow(10, 2)) / Math.pow(10, 2));
     }
 
     private int getNoTaughtCourses(AccountDetails account) {
@@ -674,8 +674,10 @@ public class HRServiceImpl implements HRService {
                 .orElseThrow(() -> new CourseNotFoundException("[Trainees Report Error] No course with the name "
                         + courseName + " found."));
 
-        return (float) (100 * (courseStats.getCompletedAssignments()
+        final float progressLevel = (float) (100 * (courseStats.getCompletedAssignments()
                 / courseStats.getCourse().getNumberOfAssignments()));
+
+        return (float) (Math.round(progressLevel * Math.pow(10, 2)) / Math.pow(10, 2));
     }
 
     private Float determineTraineePathProgressLevel(AccountDetails account, String pathName) {
@@ -684,7 +686,10 @@ public class HRServiceImpl implements HRService {
                 .orElseThrow(() -> new PathCompletionStatsNotFoundException("[Trainees Report Error] No path with the "
                         + "name " + pathName + " found."));
 
-        return (float) (100 * (pathStats.getCompletedCourses() / pathStats.getPath().getNumberOfCourses()));
+        final float progressLevel =  (float) (100 * (pathStats.getCompletedCourses()
+                / pathStats.getPath().getNumberOfCourses()));
+
+        return (float) (Math.round(progressLevel * Math.pow(10, 2)) / Math.pow(10, 2));
     }
 
     private boolean determineEligibilityForManagement(Course course, AccountDetails account) {
