@@ -674,8 +674,8 @@ public class HRServiceImpl implements HRService {
                 .orElseThrow(() -> new CourseNotFoundException("[Trainees Report Error] No course with the name "
                         + courseName + " found."));
 
-        final float progressLevel = (float) (100 * (courseStats.getCompletedAssignments()
-                / courseStats.getCourse().getNumberOfAssignments()));
+        final float progressLevel = 100 * ((float) courseStats.getCompletedAssignments()
+                / courseStats.getCourse().getNumberOfAssignments());
 
         return (float) (Math.round(progressLevel * Math.pow(10, 2)) / Math.pow(10, 2));
     }
@@ -686,8 +686,8 @@ public class HRServiceImpl implements HRService {
                 .orElseThrow(() -> new PathCompletionStatsNotFoundException("[Trainees Report Error] No path with the "
                         + "name " + pathName + " found."));
 
-        final float progressLevel =  (float) (100 * (pathStats.getCompletedCourses()
-                / pathStats.getPath().getNumberOfCourses()));
+        final float progressLevel =  100 * ((float) pathStats.getCompletedCourses()
+                / pathStats.getPath().getNumberOfCourses());
 
         return (float) (Math.round(progressLevel * Math.pow(10, 2)) / Math.pow(10, 2));
     }
