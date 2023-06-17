@@ -367,7 +367,7 @@ public class HRServiceImpl implements HRService {
         course.getTrainersDetails().forEach(trainer -> trainer.getTaughtCourses().remove(course));
         course.getPaths().forEach(path -> path.getPathCompletionStats().forEach(
                 stats -> {
-                    if (stats.getCompletedCourses() != 0) {
+                    if (stats.getCompletedCourses() != 0 && stats.getCompletionStatus()) {
                         stats.setCompletedCourses(stats.getCompletedCourses() - 1);
                     }
                     if (stats.getCompletedCourses().equals(path.getNumberOfCourses())) {
