@@ -422,8 +422,8 @@ public class HRServiceImpl implements HRService {
             String name, String email, String department, String position,
             String seniority, Long courseId, Integer pageNo) {
         var course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new CourseNotFoundException("[Course Enrollments Management Error] No course with id "
-                + courseId + " found."));
+                .orElseThrow(() -> new CourseNotFoundException(
+                        "[Course Enrollments Management Error] No course with id " + courseId + " found."));
 
         return accountDetailsRepository.findAll(PagingUtils.getPaging(pageNo,
                 applicationConfig.getFixedPageSize())).stream()
@@ -431,8 +431,8 @@ public class HRServiceImpl implements HRService {
                 .filter(account -> determineEligibilityForManagement(course, account))
                 .filter(account -> (ObjectUtils.isEmpty(name) || account.getName().toUpperCase(Locale.ROOT)
                         .contains(name.toUpperCase(Locale.ROOT))))
-                .filter(account -> (ObjectUtils.isEmpty(email) || account.getAccount().getEmail().toUpperCase(Locale.ROOT)
-                        .contains(email.toUpperCase(Locale.ROOT))))
+                .filter(account -> (ObjectUtils.isEmpty(email) || account.getAccount().getEmail()
+                        .toUpperCase(Locale.ROOT).contains(email.toUpperCase(Locale.ROOT))))
                 .filter(account -> (ObjectUtils.isEmpty(department) || account.getDepartment().toUpperCase(Locale.ROOT)
                         .contains(department.toUpperCase(Locale.ROOT))))
                 .filter(account -> (ObjectUtils.isEmpty(seniority) || account.getSeniority().toUpperCase(Locale.ROOT)
@@ -449,7 +449,7 @@ public class HRServiceImpl implements HRService {
     }
 
     @Override
-    public CourseEnrollmentDetailsResponse getCourseEnrollmentDetails(Long courseId) {
+    public CourseEnrollmentDetailsResponse showCourseEnrollmentDetails(Long courseId) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("[Course Enrollments Details Error] No course with id "
                         + courseId + " found."));

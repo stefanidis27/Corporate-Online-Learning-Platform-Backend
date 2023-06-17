@@ -50,7 +50,7 @@ public interface HRService {
             String name, String email, String department, String position,
             String seniority, Long courseId, Integer pageNo);
 
-    CourseEnrollmentDetailsResponse getCourseEnrollmentDetails(Long courseId);
+    CourseEnrollmentDetailsResponse showCourseEnrollmentDetails(Long courseId);
 
     List<TraineesReportResponse> showTraineesReport(
             String name, String email, String department, String position, String seniority,

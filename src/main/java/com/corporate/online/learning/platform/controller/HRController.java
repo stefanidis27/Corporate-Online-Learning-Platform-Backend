@@ -187,7 +187,7 @@ public class HRController {
 
     @GetMapping("/get-course-max-and-current-enrollments/{courseId}")
     public ResponseEntity<CourseEnrollmentDetailsResponse> showCourseEnrollmentDetails(@PathVariable Long courseId) {
-        return ResponseEntity.ok(hrService.getCourseEnrollmentDetails(courseId));
+        return ResponseEntity.ok(hrService.showCourseEnrollmentDetails(courseId));
     }
 
     @PostMapping("/enroll-trainee/{traineeId}/in-course/{courseId}")

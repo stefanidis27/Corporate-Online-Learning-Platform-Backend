@@ -122,7 +122,7 @@ public class CommonServiceImpl implements CommonService {
                 throw new CourseException("[Assignment Completion Error] Course with id " + course.getId()
                         + " could not be updated with the new completion stats.");
             }
-            if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+            if (sendConfirmationEmail) {
                 emailService.sendEmailCourseCompletedConfirmation(courseStats);
             }
 
@@ -160,7 +160,7 @@ public class CommonServiceImpl implements CommonService {
             throw new CourseCompletionStatsException("[Assignment Completion Error] Course completion stats with" +
                     " id " + courseStats.getId() + " could not be updated.");
         }
-        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+        if (sendConfirmationEmail) {
             emailService.sendEmailApprovedAssignmentConfirmation(assignmentStats);
         }
     }
@@ -221,7 +221,7 @@ public class CommonServiceImpl implements CommonService {
                     + course.getId() + " could not be updated with the new completion stats.");
         }
 
-        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+        if (sendConfirmationEmail) {
             emailService.sendEmailCourseEnrollmentConfirmation(course.getName(), account.getAccount().getEmail());
         }
     }
@@ -276,7 +276,7 @@ public class CommonServiceImpl implements CommonService {
             throw new AccountDetailsException("[Un-enrollment Error] Account details with id "
                     + account.getId() + " could not be updated with the new completion stats.");
         }
-        if (sendConfirmationEmail.equals(Boolean.TRUE)) {
+        if (sendConfirmationEmail) {
             emailService.sendEmailCourseUnEnrollmentConfirmation(course.getName(), account.getAccount().getEmail());
         }
     }
